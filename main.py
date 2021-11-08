@@ -4,14 +4,17 @@ from time import sleep
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 
-SCTAPING_URL = 'https://il.linkedin.com/jobs/' \
-      'data-scientist-jobs?position=1&pageNum=0'
+SCRAPING_URL = 'https://il.linkedin.com/jobs/' \
+        'data-scientist-jobs?position=1&pageNum=0'
 
 LIST_UPDATE_MAX_TIME = 5
 TIME_BETWEEN_SCROLL_ATTEMPTS = 0.5
 SCROLL_ATTEMPTS = LIST_UPDATE_MAX_TIME // TIME_BETWEEN_SCROLL_ATTEMPTS
 
+
+# TODO: make scroll move one page at a time
 def scroll(browser_driver):
+    # TODO: doc string
     scroll_attempts_left = SCROLL_ATTEMPTS
 
     # wait for first job element to appear
@@ -49,8 +52,13 @@ def scroll(browser_driver):
         else:
             scroll_attempts_left = SCROLL_ATTEMPTS
 
+# TODO: collect the info from the right side of the screen
+def collect_job_extra_info():
+    pass
 
-def collect_jobs(driver_collect):
+
+# TODO: accept job starting index and return number of jobs collected
+def collect_jobs(driver_collect, start_idx):
     """
     collect_jobs takes a selenium driver object of a job platform web page and
     scrapes, for every job card, the job title, the company offering the job,
@@ -60,6 +68,8 @@ def collect_jobs(driver_collect):
     :return: The function stores the collected data into a list of dictionaries
     and prints the list
     """
+    jobs_collected = 0
+
     # Acquire the list that encapsulates all the job entries
     title_divs = driver_collect.find_elements(By.CLASS_NAME,
                                               'base-search-card__info')
@@ -71,31 +81,36 @@ def collect_jobs(driver_collect):
         company = div.find_element(By.CLASS_NAME, 'base-search-card__subtitle')
         location = div.find_element(By.CLASS_NAME, 'job-search-card__location')
         publish_period = div.find_element(By.TAG_NAME, 'time')
-
+        # TODO: press the job link
+        # TODO: call collect_job_extra_info and add info to the dictionary
         list_of_dicts.append({'card_title': f'{title.text}',
                               'company': f'{company.text}',
                               'location': f'{location.text}',
                               'date': f'{publish_period.text}'})
         print(list_of_dicts[-1])
+
+        return jobs_collected
     # Print each job entry
     # for dictionary in list_of_dicts:
     #     print(dictionary)
 
 
 if __name__ == '__main__':
-
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument("--incognito")
 
     driver = webdriver.Chrome(options=chrome_options)
-    driver.get(SCTAPING_URL)
+    driver.get(SCRAPING_URL)
 
     # Wait until first parsed tag is uploaded
     element_present = ec.presence_of_element_located((By.CLASS_NAME,
                                                       'base-search-card__info'))
     WebDriverWait(driver, LIST_UPDATE_MAX_TIME).until(element_present)
 
+    # TODO: add a loop that collects jobs and scrolls each page
+
     scroll(driver)
+
     collect_jobs(driver)
 
     driver.close()
