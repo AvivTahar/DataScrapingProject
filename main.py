@@ -4,6 +4,7 @@ from time import sleep
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 
+
 SCRAPING_URL = 'https://il.linkedin.com/jobs/' \
         'data-scientist-jobs?position=1&pageNum=0'
 
@@ -53,18 +54,56 @@ def scroll(browser_driver):
             scroll_attempts_left = SCROLL_ATTEMPTS
 
 # TODO: collect the info from the right side of the screen
-def collect_job_extra_info():
-    pass
+def collect_job_extra_info(driver_extra):
+    """
+    collect_job_extra_info receives a chrome driver object an collects, per
+    each job for which it is being called, the extra information from the
+    right-hand side of the html page
+    :param driver_extra: A chrome driver to have access to html
+    :return: A dictionary of extra information
+    """
+    page_content = driver_extra.find_element(By.CLASS_NAME, 'base-serp-page__content')
+    top_card = page_content.find_element(By.CLASS_NAME, 'top-card-layout__entity-info-container')
+    flavor_second = top_card.find_elements(By.CLASS_NAME, 'topcard__flavor-row')[1]         # There are two topcad__flavor-row
+
+    try:
+        figcaption = flavor_second.find_element(By.TAG_NAME, 'figcaption')
+        number_of_applicants = figcaption.text
+    except:
+        number_of_applicants = flavor_second.find_elements(By.TAG_NAME, 'span')[1].text              # Get number of applicants for job
+
+
+    core_section_tag = driver_extra.find_element(
+        By.CLASS_NAME, 'core-section-container__content')
+    criteria_list_tag = core_section_tag.find_element(By.CLASS_NAME, 'description__job-criteria-list')  # ul
+    li_four_elements_list = criteria_list_tag.find_elements(By.TAG_NAME, 'li')
+
+    extra_dict = {}
+    for li in li_four_elements_list:
+        key = li.find_element(By.CLASS_NAME, 'description__job-criteria-subheader').text.strip()
+        value = li.find_element(By.TAG_NAME, 'span').text.strip()
+        extra_dict[key] = value
+
+    li_amount = len(li_four_elements_list)
+    four_keys = ['Seniority level', 'Employment type', 'Job function', 'Industries']
+    if not li_amount == 4:
+        for item in four_keys:
+            if item not in extra_dict.keys():
+                extra_dict[item] = 'No-Data'
+
+    extra_dict['Applicants String'] = number_of_applicants
+    return extra_dict
 
 
 # TODO: accept job starting index and return number of jobs collected
-def collect_jobs(driver_collect, start_idx):
+def collect_jobs(driver_collect, start_index):
     """
     collect_jobs takes a selenium driver object of a job platform web page and
     scrapes, for every job card, the job title, the company offering the job,
     the job's location and a time note relative to the time of running the
     scraper.
     :param driver_collect: A Selenium chrome driver object
+    :param start_index: Scraping starts from start_index
     :return: The function stores the collected data into a list of dictionaries
     and prints the list
     """
@@ -76,23 +115,28 @@ def collect_jobs(driver_collect, start_idx):
 
     # Acquire data for each individual parent tag
     list_of_dicts = []
-    for div in title_divs:
+    for div in title_divs[start_index:]:
         title = div.find_element(By.CLASS_NAME, 'base-search-card__title')
         company = div.find_element(By.CLASS_NAME, 'base-search-card__subtitle')
         location = div.find_element(By.CLASS_NAME, 'job-search-card__location')
         publish_period = div.find_element(By.TAG_NAME, 'time')
-        # TODO: press the job link
-        # TODO: call collect_job_extra_info and add info to the dictionary
         list_of_dicts.append({'card_title': f'{title.text}',
                               'company': f'{company.text}',
                               'location': f'{location.text}',
-                              'date': f'{publish_period.text}'})
+                              'publishment time': f'{publish_period.text}'})
+
+        # Press a job entry's link
+        card_entry = driver_collect.find_element(By.CLASS_NAME, 'base-card__full-link')
+
+        # If card entry's link found
+        if card_entry:
+            card_entry.click()
+
+        list_of_dicts[-1].update(collect_job_extra_info(driver_collect))
+        jobs_collected += 1
         print(list_of_dicts[-1])
 
-        return jobs_collected
-    # Print each job entry
-    # for dictionary in list_of_dicts:
-    #     print(dictionary)
+    return jobs_collected
 
 
 if __name__ == '__main__':
@@ -106,11 +150,10 @@ if __name__ == '__main__':
     element_present = ec.presence_of_element_located((By.CLASS_NAME,
                                                       'base-search-card__info'))
     WebDriverWait(driver, LIST_UPDATE_MAX_TIME).until(element_present)
-
+    driver.maximize_window()
     # TODO: add a loop that collects jobs and scrolls each page
+    collect_jobs(driver, 0)
 
-    scroll(driver)
-
-    collect_jobs(driver)
+    # scroll(driver)
 
     driver.close()
