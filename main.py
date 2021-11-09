@@ -12,7 +12,6 @@ TIME_BETWEEN_SCROLL_ATTEMPTS = 0.5
 SCROLL_ATTEMPTS = LIST_UPDATE_MAX_TIME // TIME_BETWEEN_SCROLL_ATTEMPTS
 
 
-# TODO: make scroll move one page at a time
 def scroll(browser_driver):
     # TODO: doc string
     scroll_attempts_left = SCROLL_ATTEMPTS
@@ -40,7 +39,7 @@ def scroll(browser_driver):
                 scroll_attempts_left -= 1
             else:
                 # scroll finished or timed out
-                break
+                return new_dist - scroll_dist
 
             # searches for a 'show more' button
             button_els = browser_driver.find_elements(By.CLASS_NAME, "infinite-scroller__show-more-button--visible")
@@ -50,7 +49,7 @@ def scroll(browser_driver):
                 button_els[0].click()
         # new results appeared
         else:
-            scroll_attempts_left = SCROLL_ATTEMPTS
+            return new_dist - scroll_dist
 
 # TODO: collect the info from the right side of the screen
 def collect_job_extra_info():
@@ -108,8 +107,9 @@ if __name__ == '__main__':
     WebDriverWait(driver, LIST_UPDATE_MAX_TIME).until(element_present)
 
     # TODO: add a loop that collects jobs and scrolls each page
-
-    scroll(driver)
+    while True:
+        if not scroll(driver):
+            break
 
     collect_jobs(driver)
 
