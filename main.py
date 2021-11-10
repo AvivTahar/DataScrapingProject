@@ -66,12 +66,7 @@ def collect_job_extra_info(driver_extra):
     top_card = page_content.find_element(By.CLASS_NAME, 'top-card-layout__entity-info-container')
     flavor_second = top_card.find_elements(By.CLASS_NAME, 'topcard__flavor-row')[1]         # There are two topcad__flavor-row
 
-    try:
-        figcaption = flavor_second.find_element(By.TAG_NAME, 'figcaption')
-        number_of_applicants = figcaption.text
-    except:
-        number_of_applicants = flavor_second.find_elements(By.TAG_NAME, 'span')[1].text              # Get number of applicants for job
-
+    number_of_applicants = flavor_second.find_element(By.CLASS_NAME, 'num-applicants__caption').text
 
     core_section_tag = driver_extra.find_element(
         By.CLASS_NAME, 'core-section-container__content')
@@ -111,30 +106,27 @@ def collect_jobs(driver_collect, start_index):
 
     # Acquire the list that encapsulates all the job entries
     title_divs = driver_collect.find_elements(By.CLASS_NAME,
-                                              'base-search-card__info')
+                                              'base-card')
 
     # Acquire data for each individual parent tag
-    list_of_dicts = []
-    for div in title_divs[start_index:]:
+    list_of_jobs = []
+    for div in title_divs[start_index:-1]:
         title = div.find_element(By.CLASS_NAME, 'base-search-card__title')
         company = div.find_element(By.CLASS_NAME, 'base-search-card__subtitle')
         location = div.find_element(By.CLASS_NAME, 'job-search-card__location')
         publish_period = div.find_element(By.TAG_NAME, 'time')
-        list_of_dicts.append({'card_title': f'{title.text}',
+        list_of_jobs.append({'card_title': f'{title.text}',
                               'company': f'{company.text}',
                               'location': f'{location.text}',
                               'publishment time': f'{publish_period.text}'})
 
-        # Press a job entry's link
-        card_entry = driver_collect.find_element(By.CLASS_NAME, 'base-card__full-link')
+        # click on job listing to see more info
+        div.find_element(By.CLASS_NAME, 'base-card__full-link').click()
+        sleep(2)
 
-        # If card entry's link found
-        if card_entry:
-            card_entry.click()
-
-        list_of_dicts[-1].update(collect_job_extra_info(driver_collect))
+        list_of_jobs[-1].update(collect_job_extra_info(driver_collect))
         jobs_collected += 1
-        print(list_of_dicts[-1])
+        print(list_of_jobs[-1])
 
     return jobs_collected
 
@@ -151,6 +143,7 @@ if __name__ == '__main__':
                                                       'base-search-card__info'))
     WebDriverWait(driver, LIST_UPDATE_MAX_TIME).until(element_present)
     driver.maximize_window()
+    sleep(1)
     # TODO: add a loop that collects jobs and scrolls each page
     collect_jobs(driver, 0)
 
