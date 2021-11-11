@@ -13,9 +13,15 @@ TIME_BETWEEN_SCROLL_ATTEMPTS = 0.5
 SCROLL_ATTEMPTS = LIST_UPDATE_MAX_TIME // TIME_BETWEEN_SCROLL_ATTEMPTS
 
 
-# TODO: make scroll move one page at a time
 def scroll(browser_driver):
-    # TODO: doc string
+    """
+    performs a scroll to the bottom of page. if a button press is needed('show more jobs')
+    it is clicked. the function checks if the scroll caused the page to load more jobs.
+    if additional jobs were not loaded for TIME_BETWEEN_SCROLL_ATTEMPTS it will try again.
+    if there is no success for LIST_UPDATE_MAX_TIME it will return with 0
+    :param browser_driver:
+    :return: additional length of page after the scroll in pixels
+    """
     scroll_attempts_left = SCROLL_ATTEMPTS
 
     # wait for first job element to appear
@@ -41,7 +47,7 @@ def scroll(browser_driver):
                 scroll_attempts_left -= 1
             else:
                 # scroll finished or timed out
-                break
+                return new_dist - scroll_dist
 
             # searches for a 'show more' button
             button_els = browser_driver.find_elements(By.CLASS_NAME, "infinite-scroller__show-more-button--visible")
@@ -51,9 +57,9 @@ def scroll(browser_driver):
                 button_els[0].click()
         # new results appeared
         else:
-            scroll_attempts_left = SCROLL_ATTEMPTS
+            return new_dist - scroll_dist
 
-# TODO: collect the info from the right side of the screen
+
 def collect_job_extra_info(driver_extra):
     """
     collect_job_extra_info receives a chrome driver object an collects, per
@@ -90,7 +96,6 @@ def collect_job_extra_info(driver_extra):
     return extra_dict
 
 
-# TODO: accept job starting index and return number of jobs collected
 def collect_jobs(driver_collect, start_index):
     """
     collect_jobs takes a selenium driver object of a job platform web page and
@@ -100,7 +105,7 @@ def collect_jobs(driver_collect, start_index):
     :param driver_collect: A Selenium chrome driver object
     :param start_index: Scraping starts from start_index
     :return: The function stores the collected data into a list of dictionaries
-    and prints the list
+    and prints the list. returns number of jobs collected
     """
     jobs_collected = 0
 
@@ -120,9 +125,12 @@ def collect_jobs(driver_collect, start_index):
                               'location': f'{location.text}',
                               'publishment time': f'{publish_period.text}'})
 
+        #wait = WebDriverWait(driver_collect, 10)
+        #job_listing = wait.until(lambda d: div.find_element(By.CLASS_NAME, 'base-card__full-link'))
+        job_listing = div.find_element(By.CLASS_NAME, 'base-card__full-link')
         # click on job listing to see more info
-        div.find_element(By.CLASS_NAME, 'base-card__full-link').click()
-        sleep(2)
+        job_listing.click()
+        sleep(3)
 
         list_of_jobs[-1].update(collect_job_extra_info(driver_collect))
         jobs_collected += 1
@@ -144,9 +152,13 @@ if __name__ == '__main__':
     WebDriverWait(driver, LIST_UPDATE_MAX_TIME).until(element_present)
     driver.maximize_window()
     sleep(1)
-    # TODO: add a loop that collects jobs and scrolls each page
-    collect_jobs(driver, 0)
 
-    # scroll(driver)
+    jobs_collected = 0
+    while True:
+        jobs_collected += collect_jobs(driver, jobs_collected)
+        if not jobs_collected:
+            break
+        scroll(driver)
+        sleep(3)
 
     driver.close()
