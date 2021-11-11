@@ -5,6 +5,11 @@ This project outomatically openes a webdriver and collects all info from a linkd
 * prints info of collected jobs to stdout
 * web driver operates in chrome (incognito) mode
 
-to lunch the program: `python main.py`
+setup chromedriver before running this project by following the setup
+section in this link: https://chromedriver.chromium.org/getting-started
+
+Install requirments `pip install -r /path/to/requirements.txt`
+
+To lunch the program: `python main.py`
 
 remote repo:  https://github.com/AvivTahar/DataScrapingProject.git
