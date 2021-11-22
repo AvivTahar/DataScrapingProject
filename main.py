@@ -153,11 +153,12 @@ if __name__ == '__main__':
     driver.maximize_window()
     sleep(1)
 
-    jobs_collected = 0
+    jobs_collected_sum = 0
     while True:
-        jobs_collected += collect_jobs(driver, jobs_collected)
+        jobs_collected = collect_jobs(driver, jobs_collected_sum)
         if not jobs_collected:
             break
+        jobs_collected_sum += jobs_collected
         scroll(driver)
         sleep(3)
 
