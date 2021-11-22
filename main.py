@@ -47,7 +47,7 @@ def scroll(browser_driver):
                 scroll_attempts_left -= 1
             else:
                 # scroll finished or timed out
-                return new_dist - scroll_dist
+                return 0
 
             # searches for a 'show more' button
             button_els = browser_driver.find_elements(By.CLASS_NAME, "infinite-scroller__show-more-button--visible")
