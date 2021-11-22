@@ -3,10 +3,10 @@ from selenium.webdriver.common.by import By
 from time import sleep
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
-
+import selenium.common.exceptions as sel_exc
 
 SCRAPING_URL = 'https://il.linkedin.com/jobs/' \
-        'data-scientist-jobs?position=1&pageNum=0'
+               'data-scientist-jobs?position=1&pageNum=0'
 
 LIST_UPDATE_MAX_TIME = 5
 TIME_BETWEEN_SCROLL_ATTEMPTS = 0.5
@@ -70,7 +70,7 @@ def collect_job_extra_info(driver_extra):
     """
     page_content = driver_extra.find_element(By.CLASS_NAME, 'base-serp-page__content')
     top_card = page_content.find_element(By.CLASS_NAME, 'top-card-layout__entity-info-container')
-    flavor_second = top_card.find_elements(By.CLASS_NAME, 'topcard__flavor-row')[1]         # There are two topcad__flavor-row
+    flavor_second = top_card.find_elements(By.CLASS_NAME, 'topcard__flavor-row')[1]  # There are two topcad__flavor-row
 
     number_of_applicants = flavor_second.find_element(By.CLASS_NAME, 'num-applicants__caption').text
 
@@ -107,34 +107,51 @@ def collect_jobs(driver_collect, start_index):
     :return: The function stores the collected data into a list of dictionaries
     and prints the list. returns number of jobs collected
     """
+
     jobs_collected = 0
+    sleep(2)
 
-    # Acquire the list that encapsulates all the job entries
-    title_divs = driver_collect.find_elements(By.CLASS_NAME,
-                                              'base-card')
-
-    # Acquire data for each individual parent tag
+    # Acquire data for each job element
     list_of_jobs = []
-    for div in title_divs[start_index:-1]:
-        title = div.find_element(By.CLASS_NAME, 'base-search-card__title')
-        company = div.find_element(By.CLASS_NAME, 'base-search-card__subtitle')
-        location = div.find_element(By.CLASS_NAME, 'job-search-card__location')
-        publish_period = div.find_element(By.TAG_NAME, 'time')
-        list_of_jobs.append({'card_title': f'{title.text}',
-                              'company': f'{company.text}',
-                              'location': f'{location.text}',
-                              'publishment time': f'{publish_period.text}'})
 
-        #wait = WebDriverWait(driver_collect, 10)
-        #job_listing = wait.until(lambda d: div.find_element(By.CLASS_NAME, 'base-card__full-link'))
-        job_listing = div.find_element(By.CLASS_NAME, 'base-card__full-link')
+    # job index on website starts from 1
+    job_listing_idx = start_index + 1
+    while True:
+        try:
+            # searches for a <div> element with requested index
+            title_div = driver_collect.find_element(By.XPATH, f'//div[@data-row="{str(job_listing_idx)}"]')
+        except sel_exc.NoSuchElementException:
+            # if not found could be a rare special case <a> element
+            try:
+                title_div = driver_collect.find_element(By.XPATH, f'//a[@data-row="{str(job_listing_idx)}"]')
+            except sel_exc.NoSuchElementException:
+                # no element with the requested idx found. we can finish here.
+                break
+        title = title_div.find_element(By.CLASS_NAME, 'base-search-card__title')
+        company = title_div.find_element(By.CLASS_NAME, 'base-search-card__subtitle')
+        location = title_div.find_element(By.CLASS_NAME, 'job-search-card__location')
+        publish_period = title_div.find_element(By.TAG_NAME, 'time')
+        list_of_jobs.append({'card_title': f'{title.text}',
+                             'company': f'{company.text}',
+                             'location': f'{location.text}',
+                             'publishment time': f'{publish_period.text}'})
+
+        try:
+            # should work in case title_div is a <div> element
+            job_listing = title_div.find_element(By.CLASS_NAME, 'base-card__full-link')
+        except sel_exc.NoSuchElementException:
+            # should work in the rare case title_div is an <a> element
+            job_listing = title_div
+
         # click on job listing to see more info
         job_listing.click()
-        sleep(3)
+
+        sleep(2)
 
         list_of_jobs[-1].update(collect_job_extra_info(driver_collect))
         jobs_collected += 1
         print(list_of_jobs[-1])
+        job_listing_idx += 1
 
     return jobs_collected
 
