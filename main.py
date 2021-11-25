@@ -125,12 +125,19 @@ def collect_jobs(driver_collect, start_index):
             try:
                 title_div = driver_collect.find_element(By.XPATH, f'//a[@data-row="{str(job_listing_idx)}"]')
             except sel_exc.NoSuchElementException:
-                # no element with the requested idx found. we can finish here.
+                # no element with the requested index found in the current batch.
                 break
-        title = title_div.find_element(By.CLASS_NAME, 'base-search-card__title')
-        company = title_div.find_element(By.CLASS_NAME, 'base-search-card__subtitle')
-        location = title_div.find_element(By.CLASS_NAME, 'job-search-card__location')
-        publish_period = title_div.find_element(By.TAG_NAME, 'time')
+        try:
+            title = title_div.find_element(By.CLASS_NAME, 'base-search-card__title')
+            company = title_div.find_element(By.CLASS_NAME, 'base-search-card__subtitle')
+            location = title_div.find_element(By.CLASS_NAME, 'job-search-card__location')
+            publish_period = title_div.find_element(By.TAG_NAME, 'time')
+        except sel_exc.NoSuchElementException:
+            # in case encountered some strange job listing skip to next job
+            jobs_collected += 1
+            print("Error: skipped job listing")
+            job_listing_idx += 1
+            continue
         list_of_jobs.append({'card_title': f'{title.text}',
                              'company': f'{company.text}',
                              'location': f'{location.text}',
@@ -147,8 +154,13 @@ def collect_jobs(driver_collect, start_index):
         job_listing.click()
 
         sleep(2)
+        try:
+            list_of_jobs[-1].update(collect_job_extra_info(driver_collect))
+        except sel_exc.NoSuchElementException:
+            # in case encountered some strange job listing skip to next job
+            print("Error: partial job collection")
+            pass
 
-        list_of_jobs[-1].update(collect_job_extra_info(driver_collect))
         jobs_collected += 1
         print(list_of_jobs[-1])
         job_listing_idx += 1
@@ -172,10 +184,10 @@ if __name__ == '__main__':
 
     jobs_collected_sum = 0
     while True:
-        jobs_collected = collect_jobs(driver, jobs_collected_sum)
-        if not jobs_collected:
+        num_jobs_collected = collect_jobs(driver, jobs_collected_sum)
+        if not num_jobs_collected:
             break
-        jobs_collected_sum += jobs_collected
+        jobs_collected_sum += num_jobs_collected
         scroll(driver)
         sleep(3)
 
