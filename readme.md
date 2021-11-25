@@ -1,15 +1,15 @@
-### linkedin jobs scrapper
-
-This project outomatically openes a webdriver and collects all info from a linkdin job list.
+### Linkedin Jobs Scraper
+#### Made by Aviv Tahar and Evgeny Oyffe 
+This project automatically opens a web driver and collects information from a linkdin job list for each job.
 * currently set for data science jobs in Israel.
-* prints info of collected jobs to stdout
+* prints information of collected jobs to stdout
 * web driver operates in chrome (incognito) mode
 
-setup chromedriver before running this project by following the setup
-section in this link: https://chromedriver.chromium.org/getting-started
+Download and install chromedriver before running this project by following the setup
+section on this link: https://chromedriver.chromium.org/getting-started
 
-Install requirments `pip install -r /path/to/requirements.txt`
+Install requirements `pip install -r /path/to/requirements.txt`
 
 To lunch the program: `python main.py`
 
-remote repo:  https://github.com/AvivTahar/DataScrapingProject.git
+Remote repo:  https://github.com/AvivTahar/DataScrapingProject.git
