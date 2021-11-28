@@ -4,7 +4,7 @@ from configurations import *
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 import selenium.common.exceptions as sel_exc
-from jobs import Jobs
+from job import Job
 
 
 class JobCollector:
@@ -69,22 +69,19 @@ class JobCollector:
 
     def _collect_jobs_batch(self, start_index):
         """
-        collect_jobs takes a selenium driver object of a job platform web page
-        and scrapes, for every job card, the job title, the company offering the
+        collect_jobs scrapes, for every job card, the job title, the company offering the
         job, the job's location and a time note relative to the time of running
         the scraper.
-        :param start_index: Scraping starts from start_index
-        :return: The function stores the collected data into a list of
-        dictionaries and prints the list. returns number of jobs collected
+        :param start_index: Scraping starts from the job listing at start_index
+        :return: list of job objects and next index to collect
         """
-        jobs_collected = 0
+
         sleep(WAIT_TIME)
 
         # Acquire data for each job element
         list_of_jobs = []
 
-        # Job index on website starts from 1
-        job_listing_idx = start_index + 1
+        job_listing_idx = start_index
         while True:
             try:
                 # Searches for a <div> element with requested index
@@ -110,13 +107,12 @@ class JobCollector:
                 publish_period = title_div.find_element(By.TAG_NAME, 'time')
             except sel_exc.NoSuchElementException:
                 # In case encountered some strange job listing skip to next job
-                jobs_collected += 1
                 print("Error: skipped job listing")
                 job_listing_idx += 1
                 continue
 
-            job = Jobs(title.text, company.text, location.text,
-                       publish_period.text)
+            job = Job(title.text, company.text, location.text,
+                      publish_period.text)
             list_of_jobs.append(job)
 
             try:
@@ -144,18 +140,18 @@ class JobCollector:
                 print('Error: StaleElementReferenceException: element is '
                       'not attached to the page document')
 
-            jobs_collected += 1
             print(job)
             job_listing_idx += 1
 
-        return jobs_collected
+        return job_listing_idx, list_of_jobs
 
     def _collect_job_extra_info(self, job_inst):
         """
-        collect_job_extra_info receives a chrome driver object an collects, per
-        each job for which it is being called, the extra information from the
-        right-hand side of the html page
-        :return: A dictionary of extra information
+        collect_job_extra_info collects, per each job for which it is being called,
+        the extra information from the right-hand side of the html page
+        and updates the new info in the job object.
+        assumes the driver had already clicked the job link and page finished loading
+        :return:
         """
         page_content = self._driver.find_element(By.CLASS_NAME,
                                                  'base-serp-page__content')
@@ -195,18 +191,18 @@ class JobCollector:
         Performs general job collection using JobCollector methods
         :return: A list of job entries instances
         """
+        all_jobs = []
 
-        jobs_collected_sum = 0
+        # job index on linkedin job list starts from 1
+        jobs_idx = 1
         while True:
-            num_jobs_collected = self._collect_jobs_batch(
-                start_index=jobs_collected_sum)
-            if not num_jobs_collected:
+            jobs_idx, jobs_batch = self._collect_jobs_batch(
+                start_index=jobs_idx)
+            if len(jobs_batch) == 0:
                 break
-            jobs_collected_sum += num_jobs_collected
+
+            all_jobs += jobs_batch
             self._scroll()
             sleep(SCROLL_TIME)
+        return all_jobs
 
-
-if __name__ == '__main__':
-    # Tests Job Collector
-    pass

@@ -34,4 +34,7 @@ if __name__ == '__main__':
     jobs = jc.collect_jobs()
 
     db = DB(args.db_user, args.db_pass, args.db_ip, DB_NAME)
+    db.insert(jobs)
+
+    db.disconnect()
     driver.close()

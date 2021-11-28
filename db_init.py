@@ -21,37 +21,37 @@ if __name__ == '__main__':
         cursor = connection.cursor()
         cursor.execute("CREATE DATABASE " + newDatabaseName)
         cursor.execute("USE " + newDatabaseName)
-        cursor.execute("CREATE TABLE companies(id INT PRIMARY KEY, "
+        cursor.execute("CREATE TABLE companies(id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, "
                                 "company VARCHAR(255), "
                                 "UNIQUE(company)"
                                 ")")
-        cursor.execute("CREATE TABLE countries(id INT PRIMARY KEY, "
-                                "countries VARCHAR(255), "
-                                "UNIQUE(countries)"
+        cursor.execute("CREATE TABLE countries(id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, "
+                                "country VARCHAR(255), "
+                                "UNIQUE(country)"
                                 ")")
-        cursor.execute("CREATE TABLE cities(id INT PRIMARY KEY, "
+        cursor.execute("CREATE TABLE cities(id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, "
                                 "city VARCHAR(255), "
                                 "country_id INT, "
                                 "FOREIGN KEY(country_id) REFERENCES countries(id), "
-                                "UNIQUE(city)"
+                                "CONSTRAINT UC_city UNIQUE(city, country_id)"
                                 ")")
-        cursor.execute("CREATE TABLE seniority(id INT PRIMARY KEY, "
+        cursor.execute("CREATE TABLE seniority(id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, "
                                 "seniority_level VARCHAR(255), "
                                 "UNIQUE(seniority_level)"
                                 ")")
-        cursor.execute("CREATE TABLE employment_type(id INT PRIMARY KEY, "
+        cursor.execute("CREATE TABLE employment_type(id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, "
                                 "employment_type VARCHAR(255), "
                                 "UNIQUE(employment_type)"
                                 ")")
-        cursor.execute("CREATE TABLE job_function(id INT PRIMARY KEY, "
+        cursor.execute("CREATE TABLE job_function(id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, "
                                "job_function VARCHAR(255), "
                                "UNIQUE(job_function)"
                                ")")
-        cursor.execute("CREATE TABLE industries(id INT PRIMARY KEY, "
+        cursor.execute("CREATE TABLE industries(id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, "
                                 "industry VARCHAR(255), "
                                 "UNIQUE(industry)"
                                ")")
-        cursor.execute("CREATE TABLE jobs(id INT PRIMARY KEY, "
+        cursor.execute("CREATE TABLE jobs(id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, "
                                 "job_title VARCHAR(255), "
                                 "company_id INT,"
                                 "city_id INT, "

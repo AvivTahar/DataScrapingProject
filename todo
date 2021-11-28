@@ -1,0 +1,4 @@
+TODO for the scraping project:
+
+- if you see the same job again(title, company, location) with different info update info but do not add a new job
+- add an oproximate date of the job
