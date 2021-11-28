@@ -1,5 +1,6 @@
 """Data Scraping project Configuration File"""
 
+DB_NAME = 'jobs'
 
 SCRAPING_URL = 'https://il.linkedin.com/jobs/' \
                'data-scientist-jobs?position=1&pageNum=0'
