@@ -9,13 +9,13 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # takes arguments without the quotes
-    databaseUserName = args.db_user[1:-1]
-    databaseUserPassword = args.db_pass[1:-1]
-    databaseServerIP = args.db_ip[1:-1]
+    db_user_name = args.db_user[1:-1]
+    db_user_pass = args.db_pass[1:-1]
+    db_server_ip = args.db_ip[1:-1]
 
     newDatabaseName = "jobs"  # Name of the database that is to be created
 
-    connection = pymysql.connect(host=databaseServerIP, user=databaseUserName, password=databaseUserPassword,
+    connection = pymysql.connect(host=db_server_ip, user=db_user_name, password=db_user_pass,
                                  cursorclass=pymysql.cursors.DictCursor)
     try:
         cursor = connection.cursor()
