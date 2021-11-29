@@ -129,8 +129,6 @@ class JobCollector:
             sleep(WAIT_TIME)
             try:
                 self._collect_job_extra_info(job_inst=job)
-                # list_of_jobs[-1].set_extra_info(
-                #     self._collect_job_extra_info())
             except sel_exc.NoSuchElementException:
                 # In case encountered some strange job listing skip to next job
                 print("Error: partial job collection")
@@ -193,7 +191,7 @@ class JobCollector:
         """
         all_jobs = []
 
-        # job index on linkedin job list starts from 1
+        # Job index on linkedin job list starts from 1
         jobs_idx = 1
         while True:
             jobs_idx, jobs_batch = self._collect_jobs_batch(
