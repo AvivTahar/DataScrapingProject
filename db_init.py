@@ -17,6 +17,7 @@ if __name__ == '__main__':
 
     connection = pymysql.connect(host=db_server_ip, user=db_user_name, password=db_user_pass,
                                  cursorclass=pymysql.cursors.DictCursor)
+    print("connected to database")
     try:
         cursor = connection.cursor()
         cursor.execute("CREATE DATABASE " + newDatabaseName)
@@ -67,7 +68,7 @@ if __name__ == '__main__':
                                 "FOREIGN KEY(industry_id) REFERENCES industries(id), "
                                 "CONSTRAINT UC_job UNIQUE(job_title, company_id, city_id, seniority_id)"
                                 ")")
-
+        print("database created")
     except Exception as e:
         print("Exception:{}".format(e))
     finally:
