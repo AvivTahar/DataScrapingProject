@@ -4,6 +4,7 @@ from google_searcher import GoogleSearcher
 from configurations import *
 import argparse
 from db import DB
+from coord_fetcher import CoordFetcher
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=
@@ -17,6 +18,7 @@ if __name__ == '__main__':
                                                     'database user')
     parser.add_argument('db_ip', type=ascii, help='IP address of the MySQL '
                                                   'database server')
+    parser.add_argument('key', type=ascii, help='private key for use in Positionstack API')
     args = parser.parse_args()
 
     # Set chrome driver options
@@ -35,6 +37,7 @@ if __name__ == '__main__':
 
     db = DB(args.db_user, args.db_pass, args.db_ip, DB_NAME)
     db.insert(jobs)
+    db.update_coordinates(CoordFetcher(args.key))
 
     db.disconnect()
     driver.close()

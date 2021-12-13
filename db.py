@@ -50,6 +50,8 @@ class DB:
                 "CREATE TABLE cities(id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, "
                 "city VARCHAR(255), "
                 "country_id INT, "
+                "latitude FLOAT, "
+                "longitude FLOAT, "
                 "FOREIGN KEY(country_id) REFERENCES countries(id), "
                 "CONSTRAINT UC_city UNIQUE(city, country_id)"
                 ")")
@@ -95,6 +97,7 @@ class DB:
             print("Exception:{}".format(e))
 
     def insert(self, job_list):
+        """ inserts a job list into the database"""
         try:
             for job_entry in job_list:
                 self.cursor.execute(f'INSERT IGNORE INTO companies(company) VALUES ("{job_entry.company}")')
@@ -105,7 +108,8 @@ class DB:
                 self.cursor.execute(f'SELECT id FROM countries WHERE country = "{job_entry.get_country()}"')
                 country_id = self.cursor.fetchone()["id"]
 
-                self.cursor.execute(f'INSERT IGNORE INTO cities(city, country_id) VALUES ("{job_entry.get_city()}", "{country_id}")')
+                self.cursor.execute(
+                    f'INSERT IGNORE INTO cities(city, country_id) VALUES ("{job_entry.get_city()}", "{country_id}")')
                 self.cursor.execute(f'SELECT id FROM cities WHERE city = "{job_entry.get_city()}"')
                 city_id = self.cursor.fetchone()["id"]
 
@@ -113,7 +117,8 @@ class DB:
                 self.cursor.execute(f'SELECT id FROM seniority WHERE seniority_level = "{job_entry.seniority}"')
                 seniority_id = self.cursor.fetchone()["id"]
 
-                self.cursor.execute(f'INSERT IGNORE INTO employment_type(employment_type) VALUES ("{job_entry.emp_type}")')
+                self.cursor.execute(
+                    f'INSERT IGNORE INTO employment_type(employment_type) VALUES ("{job_entry.emp_type}")')
                 self.cursor.execute(f'SELECT id FROM employment_type WHERE employment_type = "{job_entry.emp_type}"')
                 emp_type_id = self.cursor.fetchone()["id"]
 
@@ -131,6 +136,27 @@ class DB:
                     f'INSERT IGNORE INTO jobs('
                     f'job_title, company_id, city_id, seniority_id, emp_type_id, job_func_id, industry_id) VALUES '
                     f'("{job_entry.title}", "{company_id}", "{city_id}", "{seniority_id}", "{emp_type_id}", "{job_function_id}", "{industry_id}")')
+        except Exception as e:
+            print(e)
+        finally:
+            self.connection.commit()
+
+    def update_coordinates(self, cf):
+        """ Uses a cordinat fetcher class to update coordinates to the cities table where they are missing"""
+        try:
+            self.cursor.execute('SELECT * FROM cities')
+            cities = self.cursor.fetchall()
+            for city in cities:
+                if not city['latitude'] or not city['longitude']:
+                    self.cursor.execute(f'SELECT country_id FROM cities WHERE id = {city["id"]}')
+                    country_id = self.cursor.fetchone()['country_id']
+                    self.cursor.execute(f'SELECT country FROM countries WHERE id = {country_id}')
+                    country = self.cursor.fetchone()['country']
+                    (latitude, longitude) = cf.get_coord(city['city'], country)
+                    self.cursor.execute(f'UPDATE cities SET '
+                                        f'latitude = "{latitude}", '
+                                        f'longitude = "{longitude}" '
+                                        f'WHERE id = "{city["id"]}"')
         except Exception as e:
             print(e)
         finally:
