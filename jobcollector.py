@@ -67,6 +67,50 @@ class JobCollector:
             else:
                 return new_dist - scroll_dist
 
+    @staticmethod
+    def _click_job_card(t_div):
+        """click_job_card clicks a sole job card to expose extra info per job"""
+        try:
+            # Should work in case title_div is a <div> element
+            job_listing = t_div.find_element(By.CLASS_NAME,
+                                             'base-card__full-link')
+        except sel_exc.NoSuchElementException:
+            # Should work in the rare case title_div is an <a> element
+            job_listing = t_div
+
+        # Click on job listing to see more info
+        job_listing.click()
+
+    def _get_title_div(self, job_index):
+        """get_title_div uses the scrapper driver to get title div according
+        to the website's html structure"""
+        try:
+            # Searches for a <div> element with requested index
+            title_div = self._driver. \
+                find_element(By.XPATH, f'//div[@data-row='
+                                       f'"{str(job_index)}"]')
+        except sel_exc.NoSuchElementException:
+            # If not found could be a rare special case <a> element
+            title_div = self._driver. \
+                find_element(By.XPATH, f'//a[@data-row='
+                                       f'"{str(job_index)}"]')
+        return title_div
+
+    @staticmethod
+    def _get_left_info(title_div):
+        """_get_left_info gets all the info on the initial card from the
+        left hand side of the linkedin page"""
+
+        title = title_div.find_element(By.CLASS_NAME,
+                                       'base-search-card__title')
+        company = title_div.find_element(By.CLASS_NAME,
+                                         'base-search-card__subtitle')
+        location = title_div.find_element(By.CLASS_NAME,
+                                          'job-search-card__location')
+        publish_period = title_div.find_element(By.TAG_NAME, 'time')
+
+        return title, company, location, publish_period
+
     def _collect_jobs_batch(self, start_index):
         """
         collect_jobs scrapes, for every job card, the job title, the company
@@ -83,28 +127,15 @@ class JobCollector:
 
         job_listing_idx = start_index
         while True:
+
             try:
-                # Searches for a <div> element with requested index
-                title_div = self._driver.\
-                    find_element(By.XPATH, f'//div[@data-row='
-                                           f'"{str(job_listing_idx)}"]')
+                title_div = self._get_title_div(job_listing_idx)
             except sel_exc.NoSuchElementException:
-                # If not found could be a rare special case <a> element
-                try:
-                    title_div = self._driver.\
-                        find_element(By.XPATH, f'//a[@data-row='
-                                               f'"{str(job_listing_idx)}"]')
-                except sel_exc.NoSuchElementException:
-                    # No element found with the requested index
-                    break
+                break
+
             try:
-                title = title_div.find_element(By.CLASS_NAME,
-                                               'base-search-card__title')
-                company = title_div.find_element(By.CLASS_NAME,
-                                                 'base-search-card__subtitle')
-                location = title_div.find_element(By.CLASS_NAME,
-                                                  'job-search-card__location')
-                publish_period = title_div.find_element(By.TAG_NAME, 'time')
+                title, company, location, publish_period = \
+                    self._get_left_info(title_div)
             except sel_exc.NoSuchElementException:
                 # In case encountered some strange job listing skip to next job
                 print("Error: skipped job listing")
@@ -115,16 +146,8 @@ class JobCollector:
                       publish_period.text)
             list_of_jobs.append(job)
 
-            try:
-                # Should work in case title_div is a <div> element
-                job_listing = title_div.find_element(By.CLASS_NAME,
-                                                     'base-card__full-link')
-            except sel_exc.NoSuchElementException:
-                # Should work in the rare case title_div is an <a> element
-                job_listing = title_div
-
-            # Click on job listing to see more info
-            job_listing.click()
+            # Click a job card to show scrapper extra job info
+            self._click_job_card(title_div)
 
             sleep(WAIT_TIME)
             try:
@@ -132,7 +155,6 @@ class JobCollector:
             except sel_exc.NoSuchElementException:
                 # In case encountered some strange job listing skip to next job
                 print("Error: partial job collection")
-                pass
             except sel_exc.StaleElementReferenceException:
                 # If stale element
                 print('Error: StaleElementReferenceException: element is '
@@ -160,15 +182,15 @@ class JobCollector:
             top_card.find_elements(By.CLASS_NAME, 'topcard__flavor-row')[1]
         # There are two topcad__flavor-row tags
 
-        number_of_applicants = flavor_second.\
+        number_of_applicants = flavor_second. \
             find_element(By.CLASS_NAME, 'num-applicants__caption').text
 
         core_section_tag = self._driver.find_element(
             By.CLASS_NAME, 'core-section-container__content')
-        criteria_list_tag = core_section_tag.\
+        criteria_list_tag = core_section_tag. \
             find_element(By.CLASS_NAME, 'description__job-criteria-list')  # ul
 
-        li_four_elements_list = criteria_list_tag.\
+        li_four_elements_list = criteria_list_tag. \
             find_elements(By.TAG_NAME, 'li')
 
         extra_dict = {}
@@ -203,4 +225,3 @@ class JobCollector:
             self._scroll()
             sleep(SCROLL_TIME)
         return all_jobs
-
