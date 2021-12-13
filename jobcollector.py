@@ -69,9 +69,9 @@ class JobCollector:
 
     def _collect_jobs_batch(self, start_index):
         """
-        collect_jobs scrapes, for every job card, the job title, the company offering the
-        job, the job's location and a time note relative to the time of running
-        the scraper.
+        collect_jobs scrapes, for every job card, the job title, the company
+        offering the job, the job's location and a time note relative to the
+        time of running the scraper.
         :param start_index: Scraping starts from the job listing at start_index
         :return: list of job objects and next index to collect
         """
@@ -145,10 +145,10 @@ class JobCollector:
 
     def _collect_job_extra_info(self, job_inst):
         """
-        collect_job_extra_info collects, per each job for which it is being called,
-        the extra information from the right-hand side of the html page
+        collect_job_extra_info collects, per each job for which it is being
+        called, the extra information from the right-hand side of the html page
         and updates the new info in the job object.
-        assumes the driver had already clicked the job link and page finished loading
+        assumes the driver had already clicked the job link and page loaded
         :return:
         """
         page_content = self._driver.find_element(By.CLASS_NAME,

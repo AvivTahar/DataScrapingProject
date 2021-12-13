@@ -1,4 +1,3 @@
-from selenium import webdriver
 from selenium.webdriver.common.by import By
 from time import sleep
 from selenium.webdriver.support.ui import WebDriverWait
@@ -27,12 +26,3 @@ class GoogleSearcher:
         self.driver.maximize_window()
         sleep(WAIT_TIME)
 
-
-if __name__ == '__main__':
-    # test
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument("--incognito")
-
-    driver = webdriver.Chrome(options=chrome_options)
-    link_getter = GoogleSearcher(driver)
-    link_getter.open_results("full stack jobs in israel")
