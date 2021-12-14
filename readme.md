@@ -6,12 +6,15 @@ to a predefined MySQL server.
 
 How to use:
 1. This program assumes the user has a MySQL server installed.
-2. Type python main.py [serch_query] [username] [password] [ip] on your terminal
+2. Type python main.py [serch_query] [username] [password] [ip] [key] on your terminal
 to activate the scraper. 
-Example: python main.py 'data scientist in beer sheva' root myPassword 127.0.0.1
+Example: python main.py 'data scientist in beer sheva' root myPassword 127.0.0.1 4306112a3088c5b24c4708e9915ccc2b
 
 use MySQL server's username, password and ip as the arguments on your local 
 Terminal. This will create, if db is not already created, the web scrapper db.
+
+the key parameter is for using the positionstack.com API.
+the program will fetch the coordinates of job locations and store it in the DB
 
 The given example is supposed to perform a simple short demonstration.
 
