@@ -29,22 +29,31 @@ class JobCollector:
             (By.CLASS_NAME, 'base-search-card__info'))
         WebDriverWait(self._driver, LIST_UPDATE_MAX_TIME).until(
             element_present)
+        logging.debug('base-search-card__info appeared')
 
         while True:
+            logging.debug(
+                f'Attempting scroll. Scrolling Attempts Left '
+                f'{scroll_attempts_left}')
             # Get scroll distance
             scroll_dist = self._driver.execute_script(
                 "return document.body.scrollHeight")
+            logging.debug(f'scroll distance at beginning of loop:'
+                          f' {scroll_dist}')
 
             # Scroll down to bottom
             self._driver.execute_script(
                 "window.scrollTo(0, document.body.scrollHeight);")
+            logging.debug('Scroll performed')
 
             # Wait to load page
             sleep(TIME_BETWEEN_SCROLL_ATTEMPTS)
+            logging.debug('Page load waiting time passed')
 
             # Calculate new scroll height and compare with last scroll height
             new_dist = self._driver.execute_script(
                 "return document.body.scrollHeight")
+            logging.debug(f'new distance after scroll: {new_dist}')
 
             # If no new results are shown
             if new_dist == scroll_dist:
@@ -52,9 +61,10 @@ class JobCollector:
                     scroll_attempts_left -= 1
                 else:
                     # Scroll finished or timed out
+                    logging.debug('Scroll finished or timed out')
                     return 0
 
-                # Searches for a 'show more' button
+                # Searches for a 'Show More Jobs' button
                 button_els = self._driver.find_elements(By.CLASS_NAME,
                                                         "infinite-scroller__"
                                                         "show-more-button--"
@@ -63,6 +73,7 @@ class JobCollector:
                 # If button found
                 if button_els:
                     button_els[0].click()
+                    logging.debug('Show More Jobs button found and clicked')
             # New results appeared
             else:
                 return new_dist - scroll_dist
@@ -89,11 +100,14 @@ class JobCollector:
             title_div = self._driver. \
                 find_element(By.XPATH, f'//div[@data-row='
                                        f'"{str(job_index)}"]')
+            logging.debug('Got title_div using \'data-row\' XPATH tag')
+
         except sel_exc.NoSuchElementException:
             # If not found could be a rare special case <a> element
             title_div = self._driver. \
                 find_element(By.XPATH, f'//a[@data-row='
                                        f'"{str(job_index)}"]')
+            logging.info('Got title_div using \'a\' XPATH tag')
         return title_div
 
     @staticmethod
@@ -109,6 +123,8 @@ class JobCollector:
                                           'job-search-card__location')
         publish_period = title_div.find_element(By.TAG_NAME, 'time')
 
+        logging.debug(f'Left info fetch: '
+                      f'{title, company, location, publish_period}')
         return title, company, location, publish_period
 
     def _collect_jobs_batch(self, start_index):
@@ -126,11 +142,16 @@ class JobCollector:
         list_of_jobs = []
 
         job_listing_idx = start_index
+        logging.debug(f'Performing job batch collection with job_listing_idx ='
+                      f' {start_index}')
+
         while True:
 
             try:
                 title_div = self._get_title_div(job_listing_idx)
             except sel_exc.NoSuchElementException:
+                logging.info('Did not find title_div html tag. Exiting job'
+                             ' batch collection loop')
                 break
 
             try:
@@ -138,26 +159,30 @@ class JobCollector:
                     self._get_left_info(title_div)
             except sel_exc.NoSuchElementException:
                 # In case encountered some strange job listing skip to next job
-                print("Error: skipped job listing")
+                logging.error("Error: Did not find left card data on title_div"
+                              " tag. Skipping job listing - moving to next idx")
                 job_listing_idx += 1
                 continue
 
             job = Job(title.text, company.text, location.text,
                       publish_period.text)
             list_of_jobs.append(job)
+            logging.info('Successful initiation of Job class instance')
+            logging.debug(f'Job Card: {job.__str__()}')
 
             # Click a job card to show scrapper extra job info
             self._click_job_card(title_div)
+            logging.info('Clicked on left side job card')
 
             sleep(WAIT_TIME)
             try:
                 self._collect_job_extra_info(job_inst=job)
             except sel_exc.NoSuchElementException:
                 # In case encountered some strange job listing skip to next job
-                print("Error: partial job collection")
+                logging.error("Error: partial job collection")
             except sel_exc.StaleElementReferenceException:
                 # If stale element
-                print('Error: StaleElementReferenceException: element is '
+                logging.error('Error: StaleElementReferenceException: element is '
                       'not attached to the page document')
 
             print(job)
@@ -215,13 +240,20 @@ class JobCollector:
 
         # Job index on linkedin job list starts from 1
         jobs_idx = 1
+        logging.info('Beginning of main colect_job method\'s job-batch '
+                     'collecting loop')
         while True:
             jobs_idx, jobs_batch = self._collect_jobs_batch(
                 start_index=jobs_idx)
+            logging.debug(f'Collected job batch with index: {jobs_idx} and'
+                          f'jobs_batch: {jobs_batch}')
             if len(jobs_batch) == 0:
+                logging.debug('jobs_batch equals 0, exiting job-batch '
+                              'collecting loop')
                 break
 
             all_jobs += jobs_batch
             self._scroll()
+            logging.info('Page scroll')
             sleep(SCROLL_TIME)
         return all_jobs

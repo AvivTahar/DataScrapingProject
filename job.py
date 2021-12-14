@@ -1,3 +1,6 @@
+import logging
+
+
 class Job:
 
     def __init__(self, title, company, location, publish_period):
@@ -10,6 +13,11 @@ class Job:
         self.job_function = None
         self.industry = None
         self._application_str = None
+        logging.debug(f'Job class instantiated with:'
+                      f' title = {title},'
+                      f' company = {company},'
+                      f' location = {location},'
+                      f' publish period = {publish_period}.')
 
     def set_extra_info(self, info):
         keys = info.keys()
@@ -23,11 +31,19 @@ class Job:
             self.industry = info['Industries']
         if 'Applicants String' in keys:
             self._application_str = info['Applicants String']
+        logging.debug(f'Extra job info set at instance with: '
+                      f'Seniority = {self.seniority} '
+                      f'Employment type = {self.emp_type} '
+                      f'Job Function = {self.job_function} '
+                      f'Industries = {self.industry} '
+                      f'Application String = {self._application_str}.')
 
     def get_city(self):
+        logging.debug(f'Location Fetch (get_city): {self._location}')
         return self._location.split(',')[0]
 
     def get_country(self):
+        logging.debug(f'Location Fetch (get_country): {self._location}')
         return self._location.split(',')[-1][1:]
 
     def __str__(self):

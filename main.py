@@ -1,3 +1,5 @@
+import logging
+
 from selenium import webdriver
 from jobcollector import JobCollector
 from google_searcher import GoogleSearcher
@@ -5,8 +7,15 @@ from configurations import *
 import argparse
 from db import DB
 from coord_fetcher import CoordFetcher
+import logging
+
+logging.basicConfig(filename='linkedinDataScrapeLog.log',
+                    format='%(asctime)s %(levelname)s: %(message)s',
+                    level=CONF_LEVEL)
 
 if __name__ == '__main__':
+    logging.info('Linkedin Job Scrapper started')
+
     parser = argparse.ArgumentParser(description=
                                      'Linkedin Job Scraping Project')
     parser.add_argument(
@@ -31,13 +40,27 @@ if __name__ == '__main__':
     google_searcher = GoogleSearcher(driver)
     google_searcher.open_results(args.search_query)
 
+    logging.info('Google search has been performed. Initiating JobCollector')
+
     # Collect Jobs
     jc = JobCollector(driver)
+    logging.info(f'Job Collector initiated with driver: {driver}'
+                 f'Calling JobColletctors collect_jobs method')
     jobs = jc.collect_jobs()
+    logging.info('Finished collecting jobs')
 
+    logging.info('Initiating Database activity')
     db = DB(args.db_user, args.db_pass, args.db_ip, DB_NAME)
+    logging.debug(f'Database class initiated with: db_user = {args.db_user},'
+                  f'db_ip = {args.db_ip}, db_name = {DB_NAME}')
+
     db.insert(jobs)
+    logging.info('Database job insertion performed. Adding coordinates'
+                 ' from API')
+
     db.update_coordinates(CoordFetcher(args.key))
+    logging.info('performed DB update with coordinates from external API')
 
     db.disconnect()
     driver.close()
+    logging.debug('Disconnected from Database and closed Chrome Driver')

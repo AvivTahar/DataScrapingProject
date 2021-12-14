@@ -1,3 +1,4 @@
+import logging
 """Data Scraping project Configuration File"""
 
 DB_NAME = 'jobs'
@@ -13,3 +14,5 @@ WAIT_TIME = 2
 SCROLL_TIME = 3
 
 GEO_API = 'http://api.positionstack.com/v1/'
+
+CONF_LEVEL = logging.INFO

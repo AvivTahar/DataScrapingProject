@@ -8,16 +8,23 @@ class DB:
         db_user_name = db_user_name[1:-1]
         db_user_pass = db_user_pass[1:-1]
 
+        logging.debug(f'Connecting to DB with: '
+                      f'IP = {db_server_ip}, '
+                      f'Username = {db_user_name}, '
+                      f'Pass length = {len(db_user_pass)}')
+
         self.connection = pymysql.connect(host=db_server_ip,
                                           user=db_user_name,
                                           password=db_user_pass,
                                           cursorclass=
                                           pymysql.cursors.DictCursor)
+        logging.info('Database connection success')
 
         self.cursor = self.connection.cursor()
 
         self.cursor.execute("show databases")
         dbses = self.cursor.fetchall()
+        logging.debug(f'Current available databases: {dbses}')
 
         # Create Database if not exist
         db_exist = False
@@ -26,9 +33,11 @@ class DB:
                 db_exist = True
                 break
         if not db_exist:
+            logging.info('Creating Database')
             self._create_db()
 
         self.cursor.execute("USE " + db_name)
+        logging.info(f'Using database: {db_name}')
 
     def _create_db(self):
         """_create_db creates a database for the web scraper"""
@@ -92,14 +101,19 @@ class DB:
                 "FOREIGN KEY(industry_id) REFERENCES industries(id), "
                 "CONSTRAINT UC_job UNIQUE(job_title, company_id, city_id, seniority_id)"
                 ")")
-            print("database created")
+            logging.info('Database created')
+            print("Database created")
         except Exception as e:
+            logging.debug('Database creation failed')
+            logging.debug('Exception:{}'.format(e))
             print("Exception:{}".format(e))
 
     def insert(self, job_list):
         """ inserts a job list into the database"""
         try:
             for job_entry in job_list:
+                logging.debug(f'Inserting job entry to DB: '
+                              f'{job_entry.__str__()}')
                 self.cursor.execute(f'INSERT IGNORE INTO companies(company) VALUES ("{job_entry.company}")')
                 self.cursor.execute(f'SELECT id FROM companies WHERE company = "{job_entry.company}"')
                 company_id = self.cursor.fetchone()["id"]
@@ -137,12 +151,16 @@ class DB:
                     f'job_title, company_id, city_id, seniority_id, emp_type_id, job_func_id, industry_id) VALUES '
                     f'("{job_entry.title}", "{company_id}", "{city_id}", "{seniority_id}", "{emp_type_id}", "{job_function_id}", "{industry_id}")')
         except Exception as e:
-            print(e)
+            logging.debug('Job entry insertion failed')
+            logging.debug('Exception:{}'.format(e))
+            print("Exception:{}".format(e))
         finally:
             self.connection.commit()
+            logging.debug('Committed database insertion')
 
     def update_coordinates(self, cf):
-        """ Uses a cordinat fetcher class to update coordinates to the cities table where they are missing"""
+        """ Uses a coordinate fetcher class to update coordinates to the cities
+         table where they are missing"""
         try:
             self.cursor.execute('SELECT * FROM cities')
             cities = self.cursor.fetchall()
@@ -158,7 +176,7 @@ class DB:
                                         f'longitude = "{longitude}" '
                                         f'WHERE id = "{city["id"]}"')
         except Exception as e:
-            print(e)
+            logging.debug(f'Coordinate update failed: {e}')
         finally:
             self.connection.commit()
 
