@@ -29,9 +29,10 @@ class GoogleSearcher:
         logging.info('Clicking google search result performed')
 
         # Wait until first parsed tag is uploaded
-        element_present = ec.presence_of_element_located((
-            By.CLASS_NAME, 'base-search-card__info'))
-        WebDriverWait(self.driver, LIST_UPDATE_MAX_TIME).until(element_present)
+        sleep(WAIT_TIME)
+        # element_present = ec.presence_of_element_located((
+        #     By.CLASS_NAME, 'base-search-card__info'))
+        # WebDriverWait(self.driver, LIST_UPDATE_MAX_TIME).until(element_present)
         self.driver.maximize_window()
         logging.info('Chrome window has been maximized')
         sleep(WAIT_TIME)
