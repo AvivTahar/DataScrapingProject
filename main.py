@@ -40,7 +40,8 @@ if __name__ == '__main__':
     options.add_argument("enable-automation")
     options.add_argument("--disable-infobars")
     options.add_argument("--disable-dev-shm-usage")
-    options.add_argument("window-size=1400, 1500")
+    options.add_argument("--window-size=1920x1080")
+    options.add_argument("--start-maximised")
 
     # options = options.to_capabilities()
     # driver = webdriver.Remote(service.service_url, options)
