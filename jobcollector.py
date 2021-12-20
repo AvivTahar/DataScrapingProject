@@ -12,6 +12,7 @@ class JobCollector:
     def __init__(self, driver):
         self._driver = driver
 
+    # scroll is not needed in headless driver
     def _scroll(self):
         """
         performs a scroll to the bottom of page. if a button press is needed
@@ -251,7 +252,9 @@ class JobCollector:
                 break
 
             all_jobs += jobs_batch
-            #self._scroll()
-            logging.info('Page scroll')
+
+            # scroll is not needed in headless driver
+            # self._scroll()
+            # logging.info('Page scroll')
             sleep(SCROLL_TIME)
         return all_jobs

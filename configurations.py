@@ -15,4 +15,4 @@ SCROLL_TIME = 3
 
 GEO_API = 'http://api.positionstack.com/v1/'
 
-CONF_LEVEL = logging.INFO
+CONF_LEVEL = logging.DEBUG
