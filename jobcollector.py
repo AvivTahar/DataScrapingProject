@@ -25,10 +25,8 @@ class JobCollector:
         scroll_attempts_left = SCROLL_ATTEMPTS
 
         # Wait for first job element to appear
-        element_present = ec.presence_of_element_located(
-            (By.CLASS_NAME, 'base-search-card__info'))
-        WebDriverWait(self._driver, LIST_UPDATE_MAX_TIME).until(
-            element_present)
+        sleep(LIST_UPDATE_MAX_TIME)
+
         logging.debug('base-search-card__info appeared')
 
         while True:
