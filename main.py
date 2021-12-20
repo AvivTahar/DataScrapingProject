@@ -33,9 +33,10 @@ if __name__ == '__main__':
     # Set chrome driver options
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument("--incognito")
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument("--remote-debugging-port=9222")
+    chrome_options.headless = True
+    # chrome_options.add_argument("--no-sandbox")
+    # chrome_options.add_argument("--disable-dev-shm-usage")
+    # chrome_options.add_argument("--remote-debugging-port=9222")
     # Initiate chrome driver and get website
     driver = webdriver.Chrome(options=chrome_options)
 
