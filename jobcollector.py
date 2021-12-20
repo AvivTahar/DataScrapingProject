@@ -251,7 +251,7 @@ class JobCollector:
                 break
 
             all_jobs += jobs_batch
-            self._scroll()
+            #self._scroll()
             logging.info('Page scroll')
             sleep(SCROLL_TIME)
         return all_jobs
