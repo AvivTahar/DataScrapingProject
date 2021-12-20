@@ -34,7 +34,9 @@ if __name__ == '__main__':
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument("--incognito")
     chrome_options.headless = True
-    # chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument(
+        f'user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36')
     # chrome_options.add_argument("--disable-dev-shm-usage")
     # chrome_options.add_argument("--remote-debugging-port=9222")
     # Initiate chrome driver and get website
