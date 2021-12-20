@@ -31,8 +31,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Set chrome driver options
-    # service = webdriver.Chrome.service.Service('./chromedriver')
-    # service.start()
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')
     options.add_argument('--incognito')
@@ -43,17 +41,6 @@ if __name__ == '__main__':
     options.add_argument("--window-size=1920x1080")
     options.add_argument("--start-maximised")
 
-    # options = options.to_capabilities()
-    # driver = webdriver.Remote(service.service_url, options)
-
-    # chrome_options = webdriver.ChromeOptions()
-    # chrome_options.add_argument("--incognito")
-    # chrome_options.headless = True
-    # chrome_options.add_argument("--no-sandbox")
-    # chrome_options.add_argument(
-    #     f'user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36')
-    # chrome_options.add_argument("--disable-dev-shm-usage")
-    # chrome_options.add_argument("--remote-debugging-port=9222")
     # Initiate chrome driver and get website
     driver = webdriver.Chrome(options=options, executable_path='./chromedriver')
 

@@ -176,7 +176,7 @@ class DB:
                                         f'longitude = "{longitude}" '
                                         f'WHERE id = "{city["id"]}"')
         except Exception as e:
-            logging.debug(f'Coordinate update failed: {e}')
+            logging.error(f'Coordinate update failed: {e}')
         finally:
             self.connection.commit()
 
