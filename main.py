@@ -31,8 +31,16 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Set chrome driver options
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument("--incognito")
+    # service = webdriver.Chrome.service.Service('./chromedriver')
+    # service.start()
+    options = webdriver.ChromeOptions()
+    options.add_argument('--headless')
+    options.add_argument('--incognito')
+    options = options.to_capabilities()
+    # driver = webdriver.Remote(service.service_url, options)
+
+    # chrome_options = webdriver.ChromeOptions()
+    # chrome_options.add_argument("--incognito")
     # chrome_options.headless = True
     # chrome_options.add_argument("--no-sandbox")
     # chrome_options.add_argument(
@@ -40,7 +48,7 @@ if __name__ == '__main__':
     # chrome_options.add_argument("--disable-dev-shm-usage")
     # chrome_options.add_argument("--remote-debugging-port=9222")
     # Initiate chrome driver and get website
-    driver = webdriver.Chrome(options=chrome_options)
+    driver = webdriver.Chrome(options=options, executable_path='./chromedriver')
 
     google_searcher = GoogleSearcher(driver)
     google_searcher.open_results(args.search_query)
