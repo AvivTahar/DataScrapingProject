@@ -36,7 +36,7 @@ if __name__ == '__main__':
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')
     options.add_argument('--incognito')
-    options = options.to_capabilities()
+    # options = options.to_capabilities()
     # driver = webdriver.Remote(service.service_url, options)
 
     # chrome_options = webdriver.ChromeOptions()
